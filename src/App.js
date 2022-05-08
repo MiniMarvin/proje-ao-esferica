@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+// import { add, div, mul } from './calc';
 import './App.css';
 
 function App() {
@@ -34,9 +35,9 @@ function App() {
         let mny = 0
         let mxy = 0
         for (let i = 0; i < canvas.width; i++) {
-          const x = i - canvas.width/2
+          const x = 2*i/canvas.width - 1
           for (let j = 0; j < canvas.height; j++) {
-            const y = j - canvas.height/2
+            const y = 2*j/canvas.height - 1
             const xc = (x < 0 ? -1 : 1) * Math.sqrt((1 - 1/Math.pow((x*x + y*y + 1), 2))/(1 + Math.pow(y,2)/Math.pow(x,2)))
             const yc = (y < 0 ? -1 : 1) * Math.sqrt(1 - xc*xc - 1/Math.pow((x*x + y*y + 1), 2))
             if (xc > -100 && xc < 100 && yc > -100 && yc < 100) {
@@ -51,8 +52,10 @@ function App() {
             // console.log(`computed: (${xc}, ${yc})`)
             const xcl = Math.round( (xc + 1) * canvas2.width/2 )
             const ycl = Math.round( (yc + 1) * canvas2.height/2 )
-            console.log(`normal computed: (${xcl}, ${ycl})`)
+            // console.log(`normal computed: (${xcl}, ${ycl})`)
             const pixel = ctx.getImageData(i, j, 1, 1)
+
+            console.log(`original: ${x}, ${y} \ncomputed: ${xc}, ${yc}`)
             // console.log(pixel)
             // console.log(xcl, ycl)
             ctx2.putImageData(pixel, xcl, ycl)
