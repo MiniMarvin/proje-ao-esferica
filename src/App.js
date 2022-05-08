@@ -30,34 +30,6 @@ function App() {
         canvas2.width = Math.min(canvas.width, canvas.height)
         canvas2.height = canvas2.width
         
-        
-        
-        // Do plano linear para o plano projetivo circular
-        // const computeXc = (x, y) => (x < 0 ? -1 : 1) * Math.sqrt((1 - 1/Math.pow((x*x + y*y + 1), 2))/(1 + Math.pow(y,2)/Math.pow(x,2)))
-        // const computeYc = (x, y) => (y < 0 ? -1 : 1) * Math.sqrt(1 - xc*xc - 1/Math.pow((x*x + y*y + 1), 2))
-        // for (let i = 0; i < canvas.width; i++) {
-        //   const x = 2*i/canvas.width - 1
-        //   for (let j = 0; j < canvas.height; j++) {
-        //     const y = 2*j/canvas.height - 1
-        //     const xc = computeXc(x,y)
-        //     const yc = computeYc(x,y)
-        //     if (xc > -100 && xc < 100 && yc > -100 && yc < 100) {} else {
-        //       continue
-        //     }
-            
-        //     // console.log(`computed: (${xc}, ${yc})`)
-        //     const xcl = Math.round( (xc + 1) * canvas2.width/2 )
-        //     const ycl = Math.round( (yc + 1) * canvas2.height/2 )
-        //     // console.log(`normal computed: (${xcl}, ${ycl})`)
-        //     const pixel = ctx.getImageData(i, j, 1, 1)
-
-        //     console.log(`original: ${x}, ${y} \ncomputed: ${xc}, ${yc}`)
-        //     // console.log(pixel)
-        //     // console.log(xcl, ycl)
-        //     ctx2.putImageData(pixel, xcl, ycl)
-        //   }
-        // }
-
         const computeX2 = (x, y) => {
           const ans1 = (
             (- Math.pow(x,2)*(Math.pow(x, 2) + Math.pow(y,2) - 1) + 
