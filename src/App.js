@@ -9,11 +9,18 @@ function App() {
   const [loading, setLoading] = useState(false)
   const inputCanvasRef = useRef(null)
   const outputCanvasRef = useRef(null)
+  const inputCanvasOverlayRef = useRef(null)
+  const outputCanvasOverlayRef = useRef(null)
 
   const handleImage = (e) => {
     setLoading(true)
     const canvas = inputCanvasRef.current
     const ctx = canvas.getContext('2d')
+
+    //------------------------------------------------------
+    // Test to check if the overlay is ok
+    const canvasOverlay = inputCanvasOverlayRef.current
+    //------------------------------------------------------
 
     const canvas2 = outputCanvasRef.current
     const ctx2 = canvas2.getContext('2d')
@@ -28,10 +35,24 @@ function App() {
         const relation = computedWidth/img.width
         canvas.width = computedWidth
         canvas.height = img.height * relation
+        canvasOverlay.width = canvas.width
+        canvasOverlay.height = canvas.height
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
         canvas2.width = Math.min(canvas.width, canvas.height)
         canvas2.height = canvas2.width
+
+        // Draws an overlay over the canvas which can later on be used to create the click points for both the canvas computed
+        const ctxOverlay = canvasOverlay.getContext('2d')
+        const centerXo = Math.round(canvasOverlay.width/2)
+        const centerYo = Math.round(canvasOverlay.height/2)
+        const radiuso  = Math.round(canvasOverlay.width/2)
+        ctxOverlay.beginPath()
+        ctxOverlay.fillStyle = "#c82124"
+        ctxOverlay.arc(centerXo, centerYo, radiuso, 0, Math.PI*2)
+        ctxOverlay.stroke()
+        ctxOverlay.closePath()
+        ctxOverlay.fill()
         
         const computeX2 = (x, y) => {
           const ans1 = (
@@ -75,6 +96,7 @@ function App() {
         ctx2.beginPath()
         ctx2.arc(centerX, centerY, radius, 0, Math.PI*2)
         ctx2.stroke()
+        ctx2.closePath()
         setLoading(false)
       }
       img.src = event.target.result
@@ -91,8 +113,9 @@ function App() {
       </div>
       {loading ? <span>loading...</span> : null}
       <div className="canvasZone">
-        <div className="inputCanvas">
-          <canvas ref={inputCanvasRef} />
+        <div className="inputCanvasContainer">
+          <canvas ref={inputCanvasOverlayRef} className='inputCanvasOverlay' />
+          <canvas ref={inputCanvasRef} className="inputCanvas" />
         </div>
         <div className="renderCanvas">
           <canvas ref={outputCanvasRef} />

@@ -14,8 +14,17 @@
 .canvasZone {
   display: flex;
   flex-direction: row;
+  position: relative;
 }
 
-.inputCanvas {
+.inputCanvasContainer {
   margin-right: 20px;
+}
+
+
+.inputCanvasOverlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 10;
 }
