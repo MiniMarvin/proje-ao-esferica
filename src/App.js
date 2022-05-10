@@ -1,6 +1,9 @@
 import { useRef, useState } from 'react';
-// import { add, div, mul } from './calc';
+import { create, all } from 'mathjs'
 import './App.css';
+
+// const config = { }
+// const math = create(all, config)
 
 function App() {
   const [loading, setLoading] = useState(false)
