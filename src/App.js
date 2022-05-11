@@ -20,6 +20,7 @@ function App() {
     //------------------------------------------------------
     // Test to check if the overlay is ok
     const canvasOverlay = inputCanvasOverlayRef.current
+    const canvas2Overlay = outputCanvasOverlayRef.current
     //------------------------------------------------------
 
     const canvas2 = outputCanvasRef.current
@@ -41,18 +42,6 @@ function App() {
 
         canvas2.width = Math.min(canvas.width, canvas.height)
         canvas2.height = canvas2.width
-
-        // Draws an overlay over the canvas which can later on be used to create the click points for both the canvas computed
-        const ctxOverlay = canvasOverlay.getContext('2d')
-        const centerXo = Math.round(canvasOverlay.width/2)
-        const centerYo = Math.round(canvasOverlay.height/2)
-        const radiuso  = Math.round(canvasOverlay.width/2)
-        ctxOverlay.beginPath()
-        ctxOverlay.fillStyle = "#c82124"
-        ctxOverlay.arc(centerXo, centerYo, radiuso, 0, Math.PI*2)
-        ctxOverlay.stroke()
-        ctxOverlay.closePath()
-        ctxOverlay.fill()
         
         const computeX2 = (x, y) => {
           const ans1 = (
@@ -67,9 +56,11 @@ function App() {
             (Math.pow(x,2)*(Math.pow(x,2) + 2*Math.pow(y,2) - 1) + Math.pow(y,2)*(Math.pow(y,2) - 1))
           )
         }
+
         const computeY2 = (x,y) => {
           return Math.pow(y, 2)/Math.pow(x,2) *computeX2(x,y)
         }
+
         for (let i = 0; i < canvas2.width; i++) {
           const x = 2*i/canvas2.width - 1.000001
           for (let j = 0; j < canvas2.height; j++) {
@@ -89,6 +80,9 @@ function App() {
           }
         }
 
+        canvas2Overlay.width = canvas2.width
+        canvas2Overlay.height = canvas2.height
+
         // Draw affinity line
         const centerX = Math.round(canvas2.width/2)
         const centerY = Math.round(canvas2.height/2)
@@ -105,6 +99,16 @@ function App() {
     reader.readAsDataURL(e.target.files[0])
   }
 
+  const handleClick = (canvasRef) => {
+    return (event) => {
+      const canvas = canvasRef.current
+      const rect = canvas.getBoundingClientRect()
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top
+
+    }
+  }
+
   return (
     <div className="app">
       {/* TODO: add the file input button */}
@@ -118,6 +122,7 @@ function App() {
           <canvas ref={inputCanvasRef} className="inputCanvas" />
         </div>
         <div className="renderCanvas">
+          <canvas ref={outputCanvasOverlayRef} className="inputCanvasOverlay" />
           <canvas ref={outputCanvasRef} />
         </div>
       </div>
