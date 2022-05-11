@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { computeTransformationMatrix } from './transform';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
-});
+test('Compute Identity matrix test',() => {
+  const identityMatrix = '[[1,0,0],[0,1,0],[0,0,1]]'
+  const points = [{x: 1, y: 2}, {x: 2, y: 1}, {x: 1, y: 1}, {x: 2, y:2}]
+  const transformationMatrix = computeTransformationMatrix(points, points)
+  const relatedMatrix = transformationMatrix.map(row => row.map(cell => Math.round(cell)))
+  expect(JSON.stringify(relatedMatrix)).toBe(identityMatrix)
+})

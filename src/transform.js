@@ -1,9 +1,24 @@
 import { create, all } from 'mathjs'
 
-const config = { }
+const config = {}
 const math = create(all, config)
 
 // @typedef {x: number, y: number} point
+
+const getBaseMatrix = (points) => {
+  return  [
+    [points[0].x, points[1].x, points[2].x],
+    [points[0].y, points[1].y, points[2].y],
+    [1, 1, 1]
+  ]
+}
+
+const computeMainVector = (points) => {
+  const baseMatrix = getBaseMatrix(points)
+  const baseVec = [points[3].x, points[3].y, 1]
+  const ansVec = math.usolve(baseMatrix, baseVec)
+  return ansVec
+}
 
 /**
  * 
@@ -16,14 +31,12 @@ const computeTransformationMatrix = (inputPoints, outputPoints) => {
     throw Error("Input and output points doesn't match in size.")
   }
 
-  const equationsMatrix = inputPoints.map((_, idx) => [
-    [inputPoints[idx].x, inputPoints[idx].y, 1, 0, 0, 0, -outputPoints[idx].x*inputPoints[idx].x, -outputPoints[idx].x*inputPoints[idx].y],
-    [0, 0, 0, inputPoints[idx].x, inputPoints[idx].y, 1, -outputPoints[idx].y*inputPoints[idx].x, -outputPoints[idx].y*inputPoints[idx].y]
-  ]).reduce(((equations, curr) => equations + curr, []))
+  const inputMainVector = computeMainVector(inputPoints)
+  const outputMainVector = computeMainVector(outputPoints)
+  const p1 = getBaseMatrix(inputPoints).map(row => row.map((cell, idx) => cell*inputMainVector[idx]))
+  const p2 = getBaseMatrix(outputPoints).map(row => row.map((cell, idx) => cell*outputMainVector[idx]))
+  const transformationMatrix = math.multiply(p2, math.inv(p1))
 
-  const resultsMatrix = outputPoints.reduce((values, point) => values + [point.x, point.y],[])
-  const transformationElements = math.usolve(equationsMatrix, resultsMatrix) + [1]
-  const transformationMatrix = [0,1,2].map(start => transformationElements.slice(3*start, 3*start + 3))
   return transformationMatrix
 }
 
