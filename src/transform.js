@@ -70,7 +70,7 @@ const revertPoint = point => {
  * Convert spaces between themselves, for easier visualization it's better to use space regions between [0, 1]
  * @param {point[]} inputPoints The input points on the normalized coordinates [-1, 1]
  * @param {point[]} outputPoints The output points on the normalized coordinates [-1, 1]
- * @returns {getCircleToPlaneTransformation~transformation}
+ * @returns {function(point): point}
  */
 const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
   if (inputPoints === null || outputPoints === null) {

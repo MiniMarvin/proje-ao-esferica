@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
-import { create, all } from 'mathjs'
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
+import { getCircleToPlaneTransformation, getImageCoordinates, getNormalizedCoordinate } from './transform';
 
 // const config = { }
 // const math = create(all, config)
@@ -21,6 +21,8 @@ function App() {
     // Test to check if the overlay is ok
     const canvasOverlay = inputCanvasOverlayRef.current
     const canvas2Overlay = outputCanvasOverlayRef.current
+    inputCanvasOverlayRef.current.addEventListener('click', handleClick(inputCanvasOverlayRef))
+    outputCanvasOverlayRef.current.addEventListener('click', handleClick(outputCanvasOverlayRef))
     //------------------------------------------------------
 
     const canvas2 = outputCanvasRef.current
@@ -43,37 +45,19 @@ function App() {
         canvas2.width = Math.min(canvas.width, canvas.height)
         canvas2.height = canvas2.width
         
-        const computeX2 = (x, y) => {
-          const ans1 = (
-            (- Math.pow(x,2)*(Math.pow(x, 2) + Math.pow(y,2) - 1) + 
-            Math.sqrt(-Math.pow(x, 4)*(Math.pow(x,2) + Math.pow(y, 2) - 1))) /
-            (Math.pow(x,2)*(Math.pow(x,2) + 2*Math.pow(y,2) - 1) + Math.pow(y,2)*(Math.pow(y,2) - 1))
-          )
-          if (ans1 >= 0) return ans1
-          return (
-            (- Math.pow(x,2)*(Math.pow(x, 2) + Math.pow(y,2) - 1) - 
-            Math.sqrt(-Math.pow(x, 4)*(Math.pow(x,2) + Math.pow(y, 2) - 1))) /
-            (Math.pow(x,2)*(Math.pow(x,2) + 2*Math.pow(y,2) - 1) + Math.pow(y,2)*(Math.pow(y,2) - 1))
-          )
-        }
-
-        const computeY2 = (x,y) => {
-          return Math.pow(y, 2)/Math.pow(x,2) *computeX2(x,y)
-        }
-
         for (let i = 0; i < canvas2.width; i++) {
-          const x = 2*i/canvas2.width - 1.000001
+          const x = getNormalizedCoordinate(i, canvas2.width)
           for (let j = 0; j < canvas2.height; j++) {
-            const y = 2*j/canvas2.height - 1.000001
+            const y = getNormalizedCoordinate(j, canvas2.height)
             const dist = Math.pow(x, 2) + Math.pow(y, 2)
             if (dist > 1) continue
             
-            const originX = (x < 0 ? -1 : 1) * Math.sqrt(Math.abs(computeX2(x,y)))
-            const originY = (y < 0 ? -1 : 1) * Math.sqrt(Math.abs(computeY2(x,y)))
-            if (isNaN(originX) || isNaN(originY)) continue
+            const defaultTransform = getCircleToPlaneTransformation(null, null)
+            const origin = defaultTransform({x, y})
+            if (isNaN(origin.x) || isNaN(origin.y)) continue
 
-            const xl = Math.round((originX + 1)*canvas.width/2)
-            const yl = Math.round((originY + 1)*canvas.height/2)
+            const xl = getImageCoordinates(origin.x, canvas.width)
+            const yl = getImageCoordinates(origin.y, canvas.height)
 
             const pixel = ctx.getImageData(xl, yl, 1, 1)
             ctx2.putImageData(pixel, i, j)
@@ -106,6 +90,7 @@ function App() {
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top
 
+      console.log(`clicked at: (${x}, ${y})`)
     }
   }
 
@@ -119,10 +104,10 @@ function App() {
       <div className="canvasZone">
         <div className="inputCanvasContainer">
           <canvas ref={inputCanvasOverlayRef} className='inputCanvasOverlay' />
-          <canvas ref={inputCanvasRef} className="inputCanvas" />
+          <canvas ref={inputCanvasRef} className='inputCanvas' />
         </div>
-        <div className="renderCanvas">
-          <canvas ref={outputCanvasOverlayRef} className="inputCanvasOverlay" />
+        <div className="renderZone">
+          <canvas ref={outputCanvasOverlayRef} className="outputCanvasOverlay" />
           <canvas ref={outputCanvasRef} />
         </div>
       </div>
