@@ -31,6 +31,8 @@ function App() {
     const ctx = canvas.getContext('2d')
     const ctx2 = canvas2.getContext('2d')
 
+    ctx2.clearRect(0, 0, canvas.width, canvas.height)
+
     // const defaultTransform = getCircleToPlaneTransformation(
     //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
     //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
@@ -67,6 +69,8 @@ function App() {
         }
       }
     }
+
+    drawAffinity(canvas2, ctx2)
   }
 
   const handleImage = (e) => {
@@ -103,12 +107,10 @@ function App() {
 
         // drawOutputImage(canvas, canvas2)
         // TODO: support multiple image transitions
-
-        canvas2Overlay.width = canvas2.width
-        canvas2Overlay.height = canvas2.height
-
         // Draw affinity line
         drawAffinity(canvas2, ctx2)
+        canvas2Overlay.width = canvas2.width
+        canvas2Overlay.height = canvas2.height
         setLoading(false)
       }
       img.src = event.target.result
