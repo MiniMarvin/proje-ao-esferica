@@ -5,6 +5,11 @@ import { getCircleToPlaneTransformation, getImageCoordinates, getNormalizedCoord
 // const config = { }
 // const math = create(all, config)
 
+const inputPoints = []
+const outputPoints = []
+let inputPointsIndex = 0
+let outputPointsIndex = 0
+
 const drawAffinity = (canvas, ctx) => {
   const centerX = Math.round(canvas.width/2)
   const centerY = Math.round(canvas.height/2)
@@ -22,6 +27,48 @@ function App() {
   const inputCanvasOverlayRef = useRef(null)
   const outputCanvasOverlayRef = useRef(null)
 
+  const drawOutputImage = (canvas, canvas2) => {
+    const ctx = canvas.getContext('2d')
+    const ctx2 = canvas2.getContext('2d')
+
+    // const defaultTransform = getCircleToPlaneTransformation(
+    //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
+    //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
+    // )
+    const normalizedInput = inputPoints.length < 4 ? 
+      null : 
+      inputPoints.map(point => ({
+        x: getNormalizedCoordinate(point.x, canvas.width), 
+        y: getNormalizedCoordinate(point.y, canvas.height)
+      }))
+    const normalizedOutput = outputPoints.length < 4 ? 
+      null : 
+      outputPoints.map(point => ({
+        x: getNormalizedCoordinate(point.x, canvas2.width), 
+        y: getNormalizedCoordinate(point.y, canvas2.height)
+      }))
+    const defaultTransform = getCircleToPlaneTransformation(normalizedInput, normalizedOutput)
+
+    for (let i = 0; i < canvas2.width; i++) {
+      const x = getNormalizedCoordinate(i, canvas2.width)
+      for (let j = 0; j < canvas2.height; j++) {
+        const y = getNormalizedCoordinate(j, canvas2.height)
+        const dist = Math.pow(x, 2) + Math.pow(y, 2)
+        if (dist > 1) continue
+        const origin = defaultTransform({x, y})
+        // console.log(origin)
+        if (isNaN(origin.x) || isNaN(origin.y)) continue
+        const xl = getImageCoordinates(origin.x, canvas.width)
+        const yl = getImageCoordinates(origin.y, canvas.height)
+
+        if (xl !== null && yl != null) {
+          const pixel = ctx.getImageData(xl, yl, 1, 1)
+          ctx2.putImageData(pixel, i, j)
+        }
+      }
+    }
+  }
+
   const handleImage = (e) => {
     setLoading(true)
     const canvas = inputCanvasRef.current
@@ -31,8 +78,8 @@ function App() {
     // Test to check if the overlay is ok
     const canvasOverlay = inputCanvasOverlayRef.current
     const canvas2Overlay = outputCanvasOverlayRef.current
-    inputCanvasOverlayRef.current.addEventListener('click', handleClick(inputCanvasOverlayRef))
-    outputCanvasOverlayRef.current.addEventListener('click', handleClick(outputCanvasOverlayRef))
+    inputCanvasOverlayRef.current.addEventListener('click', handleClick(inputCanvasOverlayRef, 0))
+    outputCanvasOverlayRef.current.addEventListener('click', handleClick(outputCanvasOverlayRef, 1))
     //------------------------------------------------------
 
     const canvas2 = outputCanvasRef.current
@@ -51,33 +98,11 @@ function App() {
         canvasOverlay.width = canvas.width
         canvasOverlay.height = canvas.height
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-
         canvas2.width = Math.min(canvas.width, canvas.height)
         canvas2.height = canvas2.width
-        // const defaultTransform = getCircleToPlaneTransformation(
-        //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
-        //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
-        // )
-        const defaultTransform = getCircleToPlaneTransformation(null, null)
 
-        for (let i = 0; i < canvas2.width; i++) {
-          const x = getNormalizedCoordinate(i, canvas2.width)
-          for (let j = 0; j < canvas2.height; j++) {
-            const y = getNormalizedCoordinate(j, canvas2.height)
-            const dist = Math.pow(x, 2) + Math.pow(y, 2)
-            if (dist > 1) continue
-            const origin = defaultTransform({x, y})
-            console.log(origin)
-            if (isNaN(origin.x) || isNaN(origin.y)) continue
-            const xl = getImageCoordinates(origin.x, canvas.width)
-            const yl = getImageCoordinates(origin.y, canvas.height)
-
-            if (xl !== null && yl != null) {
-              const pixel = ctx.getImageData(xl, yl, 1, 1)
-              ctx2.putImageData(pixel, i, j)
-            }
-          }
-        }
+        // drawOutputImage(canvas, canvas2)
+        // TODO: support multiple image transitions
 
         canvas2Overlay.width = canvas2.width
         canvas2Overlay.height = canvas2.height
@@ -92,7 +117,7 @@ function App() {
     reader.readAsDataURL(e.target.files[0])
   }
 
-  const handleClick = (canvasRef) => {
+  const handleClick = (canvasRef, canvasIndex) => {
     return (event) => {
       const canvas = canvasRef.current
       const rect = canvas.getBoundingClientRect()
@@ -100,7 +125,45 @@ function App() {
       const y = event.clientY - rect.top
 
       console.log(`clicked at: (${x}, ${y})`)
+      if (canvasIndex === 0) {
+        if (inputPoints.length > 3) {
+          inputPoints[inputPointsIndex] = {x, y}
+        } else {
+          inputPoints.push({x,y})
+        }
+
+        drawPoints(canvas, inputPoints)
+        // setInputPoints(newInput)
+        if (inputPointsIndex === 3) inputPointsIndex = 0
+        else inputPointsIndex += 1
+      } else {
+        if (outputPoints.length > 3) {
+          outputPoints[outputPointsIndex] = {x, y}
+        } else {
+          outputPoints.push({x,y})
+        }
+
+        drawPoints(canvas, outputPoints)
+        // setOutputPoints(newOutput)
+        if (outputPointsIndex === 3) outputPointsIndex = 0
+        else outputPointsIndex += 1
+      }
     }
+  }
+
+  const drawPoints = (canvas, points) => {
+    console.log(points)
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    const colors = ['#dd0000','#00dd00', '#0000dd', '#dd00dd']
+    points.forEach((point, idx) => {
+      const radius  = 5
+      ctx.beginPath()
+      ctx.arc(point.x, point.y, radius, 0, Math.PI*2)
+      ctx.fillStyle = colors[idx]
+      ctx.fill()
+      ctx.closePath()
+    })
   }
 
   return (
@@ -119,6 +182,9 @@ function App() {
           <canvas ref={outputCanvasOverlayRef} className="outputCanvasOverlay" />
           <canvas ref={outputCanvasRef} />
         </div>
+      </div>
+      <div className="inputZone">
+        <button>Atualizar Imagem</button>
       </div>
     </div>
   );
