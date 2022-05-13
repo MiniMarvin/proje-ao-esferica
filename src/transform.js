@@ -67,6 +67,31 @@ const revertPoint = point => {
 }
 
 /**
+ * 
+ * @param {point[]} points 
+ */
+const computeInverseMatrixByMainMethod = (inputPoints, outputPoints) => {
+  const equations = inputPoints.map((point, idx) => {
+    const pointl = outputPoints[idx]
+    const eq = [
+      [point.x, point.y, 1, 1e-10, 1e-10, 1e-10, - pointl.x * point.x, - pointl.x * point.y],
+      [1e-10, 1e-10, 1e-10, point.x, point.y, 1, - pointl.y * point.x, - pointl.y * point.y]
+    ]
+    return eq
+  }).reduce((acc, curr) => [...acc, ...curr], [])
+
+  const outputVec = outputPoints.map(point => [point.x, point.y]).reduce((acc, curr) => [...acc, ...curr], [])
+  const answers = math.usolve(equations, outputVec)
+  const matrix = [
+    [answers[0][0], answers[1][0], answers[2][0]],
+    [answers[3][0], answers[4][0], answers[5][0]],
+    [answers[6][0], answers[7][0], 1],
+  ]
+
+  return matrix
+}
+
+/**
  * Convert spaces between themselves, for easier visualization it's better to use space regions between [0, 1]
  * @param {point[]} inputPoints The input points on the normalized coordinates [-1, 1]
  * @param {point[]} outputPoints The output points on the normalized coordinates [-1, 1]
@@ -78,8 +103,12 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
   }
 
   const outputPlanePoints = outputPoints.map(point => revertPoint(point))
-  const transformationMatrix = getTransformationMatrix(inputPoints, outputPlanePoints)
-  const inverseTransformationMatrix = math.inv(transformationMatrix)
+  // const transformationMatrix = getTransformationMatrix(inputPoints, outputPlanePoints)
+  // const inverseTransformationMatrix = math.inv(transformationMatrix)
+  // const invert = [[-1,0,0],[0,-1,0],[0,0,-1]]
+  console.log(inputPoints, outputPlanePoints)
+  const inverseTransformationMatrix = getTransformationMatrix(outputPlanePoints, inputPoints)
+  console.log(inverseTransformationMatrix)
 
   /**
    * 
@@ -89,7 +118,8 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
   const transformation = (point) => {
     const mappedPoint = revertPoint(point)
     const reversedPoint = math.multiply(inverseTransformationMatrix, [mappedPoint.x, mappedPoint.y, 1])
-    return {x: reversedPoint[0], y: reversedPoint[1]}
+    const computedPoint = {x: reversedPoint[0]/reversedPoint[2], y: reversedPoint[1]/reversedPoint[2]}
+    return computedPoint
   }
 
   return transformation

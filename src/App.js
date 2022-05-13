@@ -169,11 +169,13 @@ function App() {
   }
 
   const reRender = () => {
+    console.log('start rendering...')
     setLoading(true)
     const canvas = inputCanvasRef.current
     const canvas2 = outputCanvasRef.current
     drawOutputImage(canvas, canvas2)
     setLoading(false)
+    console.log('finished rendering...')
   }
 
   return (
