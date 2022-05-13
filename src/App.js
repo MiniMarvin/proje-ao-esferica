@@ -166,6 +166,14 @@ function App() {
     })
   }
 
+  const reRender = () => {
+    setLoading(true)
+    const canvas = inputCanvasRef.current
+    const canvas2 = outputCanvasRef.current
+    drawOutputImage(canvas, canvas2)
+    setLoading(false)
+  }
+
   return (
     <div className="app">
       {/* TODO: add the file input button */}
@@ -184,7 +192,7 @@ function App() {
         </div>
       </div>
       <div className="inputZone">
-        <button>Atualizar Imagem</button>
+        <button onClick={reRender}>Atualizar Imagem</button>
       </div>
     </div>
   );

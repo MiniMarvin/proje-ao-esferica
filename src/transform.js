@@ -87,7 +87,8 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
    * @returns {point}
    */
   const transformation = (point) => {
-    const reversedPoint = math.multiply(inverseTransformationMatrix, [point.x, point.y, 1])
+    const mappedPoint = revertPoint(point)
+    const reversedPoint = math.multiply(inverseTransformationMatrix, [mappedPoint.x, mappedPoint.y, 1])
     return {x: reversedPoint[0], y: reversedPoint[1]}
   }
 
