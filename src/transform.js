@@ -77,7 +77,7 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
     return revertPoint
   }
 
-  const outputPlanePoints = outputPoints.map(revertPoint)
+  const outputPlanePoints = outputPoints.map(point => revertPoint(point))
   const transformationMatrix = getTransformationMatrix(inputPoints, outputPlanePoints)
   const inverseTransformationMatrix = math.inv(transformationMatrix)
 
@@ -99,7 +99,9 @@ const getNormalizedCoordinate = (value, size) => {
 }
 
 const getImageCoordinates = (value, size) => {
-  return Math.round((value + 1) * size / 2)
+  const ans = Math.round((value + 1) * size / 2)
+  if (ans > size || ans < 0) return null
+  return ans
 }
 
 export {

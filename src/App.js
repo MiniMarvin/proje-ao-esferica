@@ -5,6 +5,16 @@ import { getCircleToPlaneTransformation, getImageCoordinates, getNormalizedCoord
 // const config = { }
 // const math = create(all, config)
 
+const drawAffinity = (canvas, ctx) => {
+  const centerX = Math.round(canvas.width/2)
+  const centerY = Math.round(canvas.height/2)
+  const radius  = Math.round(canvas.width/2)
+  ctx.beginPath()
+  ctx.arc(centerX, centerY, radius, 0, Math.PI*2)
+  ctx.stroke()
+  ctx.closePath()
+}
+
 function App() {
   const [loading, setLoading] = useState(false)
   const inputCanvasRef = useRef(null)
@@ -44,23 +54,28 @@ function App() {
 
         canvas2.width = Math.min(canvas.width, canvas.height)
         canvas2.height = canvas2.width
-        
+        // const defaultTransform = getCircleToPlaneTransformation(
+        //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
+        //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
+        // )
+        const defaultTransform = getCircleToPlaneTransformation(null, null)
+
         for (let i = 0; i < canvas2.width; i++) {
           const x = getNormalizedCoordinate(i, canvas2.width)
           for (let j = 0; j < canvas2.height; j++) {
             const y = getNormalizedCoordinate(j, canvas2.height)
             const dist = Math.pow(x, 2) + Math.pow(y, 2)
             if (dist > 1) continue
-            
-            const defaultTransform = getCircleToPlaneTransformation(null, null)
             const origin = defaultTransform({x, y})
+            console.log(origin)
             if (isNaN(origin.x) || isNaN(origin.y)) continue
-
             const xl = getImageCoordinates(origin.x, canvas.width)
             const yl = getImageCoordinates(origin.y, canvas.height)
 
-            const pixel = ctx.getImageData(xl, yl, 1, 1)
-            ctx2.putImageData(pixel, i, j)
+            if (xl !== null && yl != null) {
+              const pixel = ctx.getImageData(xl, yl, 1, 1)
+              ctx2.putImageData(pixel, i, j)
+            }
           }
         }
 
@@ -68,13 +83,7 @@ function App() {
         canvas2Overlay.height = canvas2.height
 
         // Draw affinity line
-        const centerX = Math.round(canvas2.width/2)
-        const centerY = Math.round(canvas2.height/2)
-        const radius  = Math.round(canvas2.width/2)
-        ctx2.beginPath()
-        ctx2.arc(centerX, centerY, radius, 0, Math.PI*2)
-        ctx2.stroke()
-        ctx2.closePath()
+        drawAffinity(canvas2, ctx2)
         setLoading(false)
       }
       img.src = event.target.result
