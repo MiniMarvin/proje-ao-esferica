@@ -31,64 +31,43 @@ const getTransformationMatrix = (inputPoints, outputPoints) => {
     throw Error("Input and output points doesn't match in size.")
   }
 
+  // TODO: usolve the matrix
+  const inputBase = getBaseMatrix(inputPoints)
+  const outputBase = getBaseMatrix(outputPoints)
   const inputMainVector = getMainVector(inputPoints)
   const outputMainVector = getMainVector(outputPoints)
-  const p1 = getBaseMatrix(inputPoints).map(row => row.map((cell, idx) => cell * inputMainVector[idx]))
-  const p2 = getBaseMatrix(outputPoints).map(row => row.map((cell, idx) => cell * outputMainVector[idx]))
+
+  const inputEigenVector = math.usolve(inputBase, inputMainVector).map(v => v[0])
+  const outputEigenVector = math.usolve(outputBase, outputMainVector).map(v => v[0])
+
+  const p1 = inputBase.map(row => row.map((cell, idx) => cell * inputEigenVector[idx]))
+  const p2 = outputBase.map(row => row.map((cell, idx) => cell * outputEigenVector[idx]))
   const transformationMatrix = math.multiply(p2, math.inv(p1))
+
+  console.log('-------------')
+  console.log('input points:', inputPoints)
+  console.log('output points:', outputPoints)
+  console.log(`input base: `, inputBase)
+  console.log(`output base: `, outputBase)
+  console.log(`input main vector: `, inputMainVector)
+  console.log(`output main vector: `, outputMainVector)
+  console.log(`input eigenvector: `, inputEigenVector)
+  console.log(`output eigenvector: `, outputEigenVector)
+  console.log(`p1: `, p1)
+  console.log(`p2: `, p2)
+  console.log('-------------')
 
   return transformationMatrix
 }
 
-const getXPlaneSquared = (x, y) => {
-  const ans1 = (
-    (- Math.pow(x, 2) * (Math.pow(x, 2) + Math.pow(y, 2) - 1) +
-      Math.sqrt(-Math.pow(x, 4) * (Math.pow(x, 2) + Math.pow(y, 2) - 1))) /
-    (Math.pow(x, 2) * (Math.pow(x, 2) + 2 * Math.pow(y, 2) - 1) + Math.pow(y, 2) * (Math.pow(y, 2) - 1))
-  )
-  if (ans1 >= 0) return ans1
-  return (
-    (- Math.pow(x, 2) * (Math.pow(x, 2) + Math.pow(y, 2) - 1) -
-      Math.sqrt(-Math.pow(x, 4) * (Math.pow(x, 2) + Math.pow(y, 2) - 1))) /
-    (Math.pow(x, 2) * (Math.pow(x, 2) + 2 * Math.pow(y, 2) - 1) + Math.pow(y, 2) * (Math.pow(y, 2) - 1))
-  )
-}
-
-const getYPlaneSquared = (x, y) => {
-  return Math.pow(y, 2) / Math.pow(x, 2) * getXPlaneSquared(x, y)
-}
-
 const revertPoint = point => {
-  const xCircle = point.x
-  const yCircle = point.y
-  const originX = (xCircle < 0 ? -1 : 1) * Math.sqrt(Math.abs(getXPlaneSquared(xCircle, yCircle)))
-  const originY = (yCircle < 0 ? -1 : 1) * Math.sqrt(Math.abs(getYPlaneSquared(xCircle, yCircle)))
+  // const originX = (point.x < 0 ? -1 : 1) * Math.sqrt(Math.abs(getXPlaneSquared(point.x, point.y)))
+  // const originY = (point.y < 0 ? -1 : 1) * Math.sqrt(Math.abs(getYPlaneSquared(point.x, point.y)))
+  const radius2 = Math.pow(point.x, 2) + Math.pow(point.y, 2)
+  const factor = Math.sqrt(1/(1 - radius2)) 
+  const originX = factor * point.x
+  const originY = factor * point.y
   return { x: originX, y: originY }
-}
-
-/**
- * 
- * @param {point[]} points 
- */
-const computeInverseMatrixByMainMethod = (inputPoints, outputPoints) => {
-  const equations = inputPoints.map((point, idx) => {
-    const pointl = outputPoints[idx]
-    const eq = [
-      [point.x, point.y, 1, 1e-10, 1e-10, 1e-10, - pointl.x * point.x, - pointl.x * point.y],
-      [1e-10, 1e-10, 1e-10, point.x, point.y, 1, - pointl.y * point.x, - pointl.y * point.y]
-    ]
-    return eq
-  }).reduce((acc, curr) => [...acc, ...curr], [])
-
-  const outputVec = outputPoints.map(point => [point.x, point.y]).reduce((acc, curr) => [...acc, ...curr], [])
-  const answers = math.usolve(equations, outputVec)
-  const matrix = [
-    [answers[0][0], answers[1][0], answers[2][0]],
-    [answers[3][0], answers[4][0], answers[5][0]],
-    [answers[6][0], answers[7][0], 1],
-  ]
-
-  return matrix
 }
 
 /**
@@ -103,12 +82,11 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
   }
 
   const outputPlanePoints = outputPoints.map(point => revertPoint(point))
-  // const transformationMatrix = getTransformationMatrix(inputPoints, outputPlanePoints)
-  // const inverseTransformationMatrix = math.inv(transformationMatrix)
-  // const invert = [[-1,0,0],[0,-1,0],[0,0,-1]]
-  console.log(inputPoints, outputPlanePoints)
+  console.log('input points: ', inputPoints)
+  console.log('output circle points: ', outputPoints)
+  console.log('output plane points: ', outputPlanePoints)
   const inverseTransformationMatrix = getTransformationMatrix(outputPlanePoints, inputPoints)
-  console.log(inverseTransformationMatrix)
+  console.log('inverse transformation matrix: ', inverseTransformationMatrix)
 
   /**
    * 
@@ -126,7 +104,11 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
 }
 
 const getNormalizedCoordinate = (value, size) => {
-  return 2 * value / size - 1.000001
+  return 2 * value / size - 1.000000001
+}
+
+const getNormalizedCoordinateOnMain = (value, size) => {
+  return value / size + 1e-10
 }
 
 const getImageCoordinates = (value, size) => {
@@ -139,5 +121,6 @@ export {
   getTransformationMatrix,
   getCircleToPlaneTransformation,
   getNormalizedCoordinate,
-  getImageCoordinates
+  getImageCoordinates,
+  getNormalizedCoordinateOnMain
 }

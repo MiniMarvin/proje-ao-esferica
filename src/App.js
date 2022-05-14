@@ -27,22 +27,20 @@ function App() {
   const inputCanvasOverlayRef = useRef(null)
   const outputCanvasOverlayRef = useRef(null)
 
-  const drawOutputImage = (canvas, canvas2) => {
+  const drawOutputImage = (canvasRef, canvas2Ref) => {
+    const canvas = canvasRef.current
+    const canvas2 = canvas2Ref.current
     const ctx = canvas.getContext('2d')
     const ctx2 = canvas2.getContext('2d')
-
     ctx2.clearRect(0, 0, canvas.width, canvas.height)
 
-    // const defaultTransform = getCircleToPlaneTransformation(
-    //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
-    //   [{x: 0.2, y: 0.1}, {x: 0.1, y: 0.0000001}, {x: 0.1, y: 0.1}, {x: 0.2, y: 0.3}], 
-    // )
     const normalizedInput = inputPoints.length < 4 ? 
       null : 
-      inputPoints.map(point => ({
-        x: getNormalizedCoordinate(point.x, canvas.width), 
-        y: getNormalizedCoordinate(point.y, canvas.height)
-      }))
+      inputPoints.map(point => {
+        return {
+          x: getNormalizedCoordinate(point.x, canvas.width), 
+          y: getNormalizedCoordinate(point.y, canvas.height)
+        }})
     const normalizedOutput = outputPoints.length < 4 ? 
       null : 
       outputPoints.map(point => ({
@@ -171,9 +169,7 @@ function App() {
   const reRender = () => {
     console.log('start rendering...')
     setLoading(true)
-    const canvas = inputCanvasRef.current
-    const canvas2 = outputCanvasRef.current
-    drawOutputImage(canvas, canvas2)
+    drawOutputImage(inputCanvasRef, outputCanvasRef)
     setLoading(false)
     console.log('finished rendering...')
   }
