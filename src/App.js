@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
-import { getCircleToPlaneTransformation, getImageCoordinates, getNormalizedCoordinate } from './transform';
+import { getCentralPoint, getCircleToPlaneTransformation, getImageCoordinates, getNormalizedCoordinate } from './transform';
 
 // const config = { }
 // const math = create(all, config)
@@ -151,12 +151,24 @@ function App() {
     }
   }
 
+  /**
+   * 
+   * @param {any} canvas 
+   * @param {point[]} points 
+   */
   const drawPoints = (canvas, points) => {
     console.log(points)
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    const colors = ['#dd0000','#00dd00', '#0000dd', '#dd00dd']
-    points.forEach((point, idx) => {
+    const colors = ['#dd0000','#00dd00', '#0000dd', '#dd00dd', '#dddd00']
+    let npoints = points
+    // if (points.length === 4) {
+    //   const center = getCentralPoint(points)
+    //   console.log('may draw the center:', center)
+    //   npoints = [...points, center]
+    // }
+    
+    npoints.forEach((point, idx) => {
       const radius  = 5
       ctx.beginPath()
       ctx.arc(point.x, point.y, radius, 0, Math.PI*2)
