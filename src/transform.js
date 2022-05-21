@@ -63,7 +63,7 @@ const getTransformationMatrix = (inputPoints, outputPoints) => {
 
 const revertPoint = point => {
   const radius2 = Math.pow(point.x, 2) + Math.pow(point.y, 2)
-  const factor = Math.sqrt(1/(1 - radius2)) 
+  const factor = Math.sqrt(1 / (1 - radius2))
   const originX = factor * point.x
   const originY = factor * point.y
   return { x: originX, y: originY }
@@ -84,13 +84,15 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
   console.log('input points: ', inputPoints)
   console.log('output circle points: ', outputPoints)
   console.log('output plane points: ', outputPlanePoints)
-  // const inverseTransformationMatrix = getTransformationMatrix(outputPlanePoints, inputPoints)
+  const inverseTransformationMatrix = getTransformationMatrix(outputPlanePoints, inputPoints)
+  // const inverseTransformationMatrix = getProjectiveTransformationValues(outputPlanePoints, inputPoints)
+  console.log('inverse transformation matrix: ', inverseTransformationMatrix)
+
+  // const H = getProjectiveTransformationValues(outputPlanePoints, inputPoints)
+  // console.log({H})
+  // const inverseTransformationMatrix = H
   // console.log('inverse transformation matrix: ', inverseTransformationMatrix)
 
-  const H = getProjectiveTransformationValues(outputPlanePoints, inputPoints)
-  const inverseTransformationMatrix = H
-  console.log('inverse transformation matrix: ', inverseTransformationMatrix)
-  
   /**
    * 
    * @param {point} point 
@@ -99,27 +101,28 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
   const transformation = (point) => {
     const mappedPoint = revertPoint(point)
     const reversedPoint = math.multiply(inverseTransformationMatrix, [mappedPoint.x, mappedPoint.y, 1])
-    const computedPoint = {x: reversedPoint[0], y: reversedPoint[1], z: reversedPoint[2]}
+    const computedPoint = { x: reversedPoint[0], y: reversedPoint[1], z: reversedPoint[2] }
     return computedPoint
   }
 
-  const directTransformation = (point) => {
-    const reversedPoint = math.multiply(inverseTransformationMatrix, [point.x, point.y, 1])
-    const computedPoint = {x: reversedPoint[0], y: reversedPoint[1], z: reversedPoint[2]}
-    return computedPoint
-  }
-
-  console.log('===========================')
-  const validation = outputPoints.map((circlePoint, idx) => ({
-    circlePoint: circlePoint, 
-    outputPlanePoint: outputPlanePoints[idx], 
-    computedOutputPlanePoint: revertPoint(circlePoint), 
-    inputPlanePoint: inputPoints[idx], 
-    computedInputPlanePoint: transformation(circlePoint),
-    directComputedInputPlanePoint: directTransformation(outputPlanePoints[idx]), 
-  }))
-  console.log({validation})
-  console.log('===========================')
+  console.log('|||||||||||||||||||||')
+  console.log('reflective matrix')
+  console.log(getTransformationMatrix([
+    { x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 },],
+    [{ x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 },]
+  ))
+  console.log('|||||||||||||||||||||')
+  // console.log('===========================')
+  // const validation = outputPoints.map((circlePoint, idx) => ({
+  //   circlePoint: circlePoint,
+  //   outputPlanePoint: outputPlanePoints[idx],
+  //   computedOutputPlanePoint: revertPoint(circlePoint),
+  //   inputPlanePoint: inputPoints[idx],
+  //   computedInputPlanePoint: transformation(circlePoint),
+  //   directComputedInputPlanePoint: directTransformation(outputPlanePoints[idx]),
+  // }))
+  // console.log({ validation })
+  // console.log('===========================')
 
   return transformation
 }
@@ -148,12 +151,12 @@ const getCentralPoint = (points) => {
   const vectorPoints = points.map(p => [p.x, p.y, 1])
   const r1 = math.cross(vectorPoints[0], vectorPoints[1])
   const r2 = math.cross(vectorPoints[2], vectorPoints[3])
-  const r1l = r1.map(v => v/r1[2])
-  const r2l = r2.map(v => v/r2[2])
+  const r1l = r1.map(v => v / r1[2])
+  const r2l = r2.map(v => v / r2[2])
   console.log('r1: ', `${r1l[0]}x + (${r1l[1]}y +${r1l[2]}) = 0`)
   console.log('r2: ', `${r2l[0]}x + (${r2l[1]}y +${r2l[2]}) = 0`)
   const center = math.cross(r1l, r2l)
-  const centerPoint = {x: center[0]/center[2], y: center[1]/center[2]}
+  const centerPoint = { x: center[0] / center[2], y: center[1] / center[2] }
   return centerPoint
 }
 
