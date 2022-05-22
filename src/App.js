@@ -48,6 +48,10 @@ function App() {
         y: getNormalizedCoordinate(point.y, canvas2.height)
       }))
     const defaultTransform = getCircleToPlaneTransformation(normalizedInput, normalizedOutput)
+    // TODO: modify directly on that object to avoid rerender on the DOM without need.
+    // const inputImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    // const outputImageData = ctx.getImageData(0, 0, canvas2.width, canvas2.height)
+    // console.log({inputImageData})
 
     for (let i = 0; i < canvas2.width; i++) {
       const x = getNormalizedCoordinate(i, canvas2.width)
@@ -61,11 +65,14 @@ function App() {
         const xl = getImageCoordinates(origin.x, canvas.width)
         const yl = getImageCoordinates(origin.y, canvas.height)
 
+        // TODO: iterate over image data virtually
         if (xl !== null && yl != null) {
           const pixel = ctx.getImageData(xl, yl, 1, 1)
           ctx2.putImageData(pixel, i, j)
         }
       }
+
+      // ctx2.putImageData(imageData, 0, 0)
     }
 
     drawAffinity(canvas2, ctx2)

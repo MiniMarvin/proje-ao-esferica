@@ -45,19 +45,6 @@ const getTransformationMatrix = (inputPoints, outputPoints) => {
   const p2 = outputBase.map(row => row.map((cell, idx) => cell * outputEigenVector[idx]))
   const transformationMatrix = math.multiply(p2, math.inv(p1))
 
-  // console.log('-------------')
-  // console.log('input points:', inputPoints)
-  // console.log('output points:', outputPoints)
-  // console.log(`input base: `, inputBase)
-  // console.log(`output base: `, outputBase)
-  // console.log(`input main vector: `, inputMainVector)
-  // console.log(`output main vector: `, outputMainVector)
-  // console.log(`input eigenvector: `, inputEigenVector)
-  // console.log(`output eigenvector: `, outputEigenVector)
-  // console.log(`p1: `, p1)
-  // console.log(`p2: `, p2)
-  // console.log('-------------')
-
   return transformationMatrix
 }
 
@@ -84,14 +71,9 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
   console.log('input points: ', inputPoints)
   console.log('output circle points: ', outputPoints)
   console.log('output plane points: ', outputPlanePoints)
-  const inverseTransformationMatrix = getTransformationMatrix(outputPlanePoints, inputPoints)
-  // const inverseTransformationMatrix = getProjectiveTransformationValues(outputPlanePoints, inputPoints)
+  // const inverseTransformationMatrix = getTransformationMatrix(outputPlanePoints, inputPoints)
+  const inverseTransformationMatrix = getProjectiveTransformationValues(outputPlanePoints, inputPoints)
   console.log('inverse transformation matrix: ', inverseTransformationMatrix)
-
-  // const H = getProjectiveTransformationValues(outputPlanePoints, inputPoints)
-  // console.log({H})
-  // const inverseTransformationMatrix = H
-  // console.log('inverse transformation matrix: ', inverseTransformationMatrix)
 
   /**
    * 
@@ -107,22 +89,11 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
 
   console.log('|||||||||||||||||||||')
   console.log('reflective matrix')
-  console.log(getTransformationMatrix([
+  console.log(getProjectiveTransformationValues([
     { x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 },],
     [{ x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 },]
   ))
   console.log('|||||||||||||||||||||')
-  // console.log('===========================')
-  // const validation = outputPoints.map((circlePoint, idx) => ({
-  //   circlePoint: circlePoint,
-  //   outputPlanePoint: outputPlanePoints[idx],
-  //   computedOutputPlanePoint: revertPoint(circlePoint),
-  //   inputPlanePoint: inputPoints[idx],
-  //   computedInputPlanePoint: transformation(circlePoint),
-  //   directComputedInputPlanePoint: directTransformation(outputPlanePoints[idx]),
-  // }))
-  // console.log({ validation })
-  // console.log('===========================')
 
   return transformation
 }
