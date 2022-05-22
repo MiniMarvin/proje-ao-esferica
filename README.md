@@ -9,7 +9,13 @@ O projeto pode ser acessado em https://proje-ao-esferica.vercel.app e para utili
   
 Uma vez feito isso será realizada a reprojeção da imagem para o modelo circular mapeando os pontos um no outro.  
 
-## Como funciona?
+## Como funciona?  
+O objetivo do projeto é gerar uma imagem no modelo circular para o plano projetivo utilizando uma homografia de 4 pontos em 4 pontos. O procedimento para fazer com que isso aconteça está descrito na imagem a seguir:
+
+![Operações de Transformação](imagens/Frame 3.png)
+
+O que pode ser claramente observado na imagem é que apesar do objetivo ser transformar a imagem de entrada na imagem de saída no modelo circular o procedimento para fazer isso é completamente realizado ao contrário, a razão para isso é uma razão de interpolação, pois uma transformação dessas poderia levar o ponto (1,1) no ponto (1.3, 1.3) e o ponto (2,2) no ponto (1.4, 1.4), que significa que os dois pontos iriam terminar no mesmo ponto (1,1) na imagem de saída, pois estamos trabalhando com imagens reais que são identificadas de forma discreta, isso faria com que a imagem de saída fosse formada por diversas falhas de processamento, essa é a razão para uma operação de retorno como essa. De posse disso vamos entender como funciona o processamento de cada etapa.  
+  
 ### O plano projetivo no modelo circular de P1
 
 Para resolver o problema proposto de fazer o mapeamento de 4 pontos arbitrários é necessário realizar dois passos, o primeiro é mapear o modelo circular para um plano, após isso é necessário fazer um mapeamento do plano gerado pelo modelo circular de volta para o plano original. Para realizar essa conversão utilizando uma esfera de raio 1, a ideia é construir a partir do seguinte modelo:
