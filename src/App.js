@@ -49,9 +49,8 @@ function App() {
       }))
     const defaultTransform = getCircleToPlaneTransformation(normalizedInput, normalizedOutput)
     // TODO: modify directly on that object to avoid rerender on the DOM without need.
-    // const inputImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    // const outputImageData = ctx.getImageData(0, 0, canvas2.width, canvas2.height)
-    // console.log({inputImageData})
+    const inputImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const outputImageDataBuffer = Array.from(ctx2.getImageData(0, 0, canvas2.width, canvas2.height).data)
 
     for (let i = 0; i < canvas2.width; i++) {
       const x = getNormalizedCoordinate(i, canvas2.width)
@@ -67,13 +66,18 @@ function App() {
 
         // TODO: iterate over image data virtually
         if (xl !== null && yl != null) {
-          const pixel = ctx.getImageData(xl, yl, 1, 1)
-          ctx2.putImageData(pixel, i, j)
+          // const pixel = ctx.getImageData(xl, yl, 1, 1)
+          // ctx2.putImageData(pixel, i, j)
+          const inputPos = 4*(yl*canvas.width + xl)
+          const outputPos = 4*(j*canvas2.width + i)
+          for (let i = 0; i < 4; i++) {
+            outputImageDataBuffer[outputPos + i] = inputImageData.data[inputPos + i]
+          }
         }
       }
-
-      // ctx2.putImageData(imageData, 0, 0)
     }
+    const imageData = new ImageData(Uint8ClampedArray.from(outputImageDataBuffer), canvas2.width, canvas2.height)
+    ctx2.putImageData(imageData, 0, 0)
 
     drawAffinity(canvas2, ctx2)
   }
