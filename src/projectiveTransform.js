@@ -18,7 +18,6 @@ const rankOrder = (matrix) => {
     }
   }
 
-  console.log({rank})
   const order = Array.from({ length: rank.length }, () => 0)
   Object.keys(rank).map(key => order[rank[key]] = key)
 
@@ -29,7 +28,7 @@ const rankOrder = (matrix) => {
  * 
  * @param {number[][]} matrix 
  * @param {number[][]} outputVector 
- * @returns {{matrix: number[][], outputVector: number[][]}}
+ * @returns {{matrix: number[][], outputVector: number[][], order: number[]}}
  */
 const diagonalization = (matrix, outputVector) => {
   // deep copy to avoid issues with cloned values
@@ -52,19 +51,12 @@ const diagonalization = (matrix, outputVector) => {
         }
 
         outputVector[row][0] = newOutput
-        // console.log('vvv')
-        // console.log({matrix: JSON.parse(JSON.stringify(matrix))})
-        // console.log({outputVector: JSON.parse(JSON.stringify(outputVector))})
       }
     }
     order = rankOrder(matrix)
     matrix = order.map(rowIndex => matrix[rowIndex])
     outputVector = order.map(rowIndex => outputVector[rowIndex])
   }
-  
-  // console.log(`diagonal 1:`)
-  // console.log({matrix: JSON.parse(JSON.stringify(matrix))})
-  // console.log({outputVector: JSON.parse(JSON.stringify(outputVector))})
 
   // remove upper side
   for (let col = matrix[0].length - 1; col >= 0; col--) {
@@ -78,9 +70,6 @@ const diagonalization = (matrix, outputVector) => {
         }
 
         outputVector[row][0] = newOutput
-        // console.log('^^^')
-        // console.log({matrix: JSON.parse(JSON.stringify(matrix))})
-        // console.log({outputVector: JSON.parse(JSON.stringify(outputVector))})
       }
     }
     order = rankOrder(matrix)
@@ -98,16 +87,10 @@ const diagonalization = (matrix, outputVector) => {
  * @returns {number[]}
  */
 const getEscalatedMatrix = (matrix, outputVector) => {
-  const order = rankOrder(matrix)
-  // reorder the matrix to escalonation
-  const orderedMatrix = order.map(rowIndex => matrix[rowIndex])
-  const orderedOutputVector = order.map(rowIndex => outputVector[rowIndex])
-
-  console.log({order, orderedMatrix, orderedOutputVector})
-
-  const diagonal = diagonalization(orderedMatrix, orderedOutputVector)
-  console.log({diagonal})
-  return diagonal.outputVector.map((_, idx) => diagonal.outputVector[idx][0]/diagonal.matrix[idx][idx])
+  const diagonal = diagonalization(matrix, outputVector)
+  const answers = diagonal.outputVector.map((_, idx) => diagonal.outputVector[idx][0]/diagonal.matrix[idx][idx])
+  // return diagonal.order.map(row => answers[row])
+  return answers
 }
 
 /**

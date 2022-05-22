@@ -83,17 +83,12 @@ const getCircleToPlaneTransformation = (inputPoints, outputPoints) => {
   const transformation = (point) => {
     const mappedPoint = revertPoint(point)
     const reversedPoint = math.multiply(inverseTransformationMatrix, [mappedPoint.x, mappedPoint.y, 1])
-    const computedPoint = { x: reversedPoint[0], y: reversedPoint[1], z: reversedPoint[2] }
+    const computedPoint = { x: reversedPoint[0]/reversedPoint[2], y: reversedPoint[1]/reversedPoint[2] }
     return computedPoint
   }
 
-  console.log('|||||||||||||||||||||')
-  console.log('reflective matrix')
-  console.log(getProjectiveTransformationValues([
-    { x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 },],
-    [{ x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 },]
-  ))
-  console.log('|||||||||||||||||||||')
+  const computedInput = outputPoints.map(point => transformation(point))
+  console.log({computedInput, inputPoints})
 
   return transformation
 }
@@ -124,8 +119,6 @@ const getCentralPoint = (points) => {
   const r2 = math.cross(vectorPoints[2], vectorPoints[3])
   const r1l = r1.map(v => v / r1[2])
   const r2l = r2.map(v => v / r2[2])
-  console.log('r1: ', `${r1l[0]}x + (${r1l[1]}y +${r1l[2]}) = 0`)
-  console.log('r2: ', `${r2l[0]}x + (${r2l[1]}y +${r2l[2]}) = 0`)
   const center = math.cross(r1l, r2l)
   const centerPoint = { x: center[0] / center[2], y: center[1] / center[2] }
   return centerPoint
