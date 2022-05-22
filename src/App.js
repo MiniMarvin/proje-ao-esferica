@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import './App.css';
-import { getCentralPoint, getCircleToPlaneTransformation, getImageCoordinates, getNormalizedCoordinate } from './transform';
+import { getCircleToPlaneTransformation, getImageCoordinates, getNormalizedCoordinate } from './transform';
 
 // const config = { }
 // const math = create(all, config)
@@ -9,6 +9,8 @@ const inputPoints = []
 const outputPoints = []
 let inputPointsIndex = 0
 let outputPointsIndex = 0
+let inputClickHandler = null
+let outputClickHandler = null
 
 const drawAffinity = (canvas, ctx) => {
   const centerX = Math.round(canvas.width/2)
@@ -18,6 +20,62 @@ const drawAffinity = (canvas, ctx) => {
   ctx.arc(centerX, centerY, radius, 0, Math.PI*2)
   ctx.stroke()
   ctx.closePath()
+}
+
+/**
+ * 
+ * @param {any} canvas 
+ * @param {point[]} points 
+ */
+const drawPoints = (canvas, points) => {
+console.log(points)
+const ctx = canvas.getContext('2d')
+ctx.clearRect(0, 0, canvas.width, canvas.height)
+const colors = ['#dd0000','#00dd00', '#0000dd', '#dd00dd', '#dddd00']
+let npoints = points
+
+npoints.forEach((point, idx) => {
+  const radius  = 5
+  ctx.beginPath()
+  ctx.arc(point.x, point.y, radius, 0, Math.PI*2)
+  ctx.fillStyle = colors[idx]
+  ctx.fill()
+  ctx.closePath()
+})
+}
+
+const handleClick = (canvasRef, canvasIndex) => {
+  return (event) => {
+    const canvas = canvasRef.current
+    const rect = canvas.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+
+    console.log(`clicked at: (${x}, ${y})`)
+    if (canvasIndex === 0) {
+      if (inputPoints.length > 3) {
+        inputPoints[inputPointsIndex] = {x, y}
+      } else {
+        inputPoints.push({x,y})
+      }
+
+      drawPoints(canvas, inputPoints)
+      // setInputPoints(newInput)
+      if (inputPointsIndex === 3) inputPointsIndex = 0
+      else inputPointsIndex += 1
+    } else {
+      if (outputPoints.length > 3) {
+        outputPoints[outputPointsIndex] = {x, y}
+      } else {
+        outputPoints.push({x,y})
+      }
+
+      drawPoints(canvas, outputPoints)
+      // setOutputPoints(newOutput)
+      if (outputPointsIndex === 3) outputPointsIndex = 0
+      else outputPointsIndex += 1
+    }
+  }
 }
 
 function App() {
@@ -91,8 +149,25 @@ function App() {
     // Test to check if the overlay is ok
     const canvasOverlay = inputCanvasOverlayRef.current
     const canvas2Overlay = outputCanvasOverlayRef.current
-    inputCanvasOverlayRef.current.addEventListener('click', handleClick(inputCanvasOverlayRef, 0))
-    outputCanvasOverlayRef.current.addEventListener('click', handleClick(outputCanvasOverlayRef, 1))
+    
+    if (inputClickHandler === null) {
+      inputClickHandler = handleClick(inputCanvasOverlayRef, 0)
+    }
+    else {
+      inputCanvasOverlayRef.current.removeEventListener('click', inputClickHandler)
+      while (inputPoints.length > 0) inputPoints.pop()
+    }
+    
+    if (outputClickHandler === null) {
+      outputClickHandler = handleClick(outputCanvasOverlayRef, 1)
+    }
+    else {
+      outputCanvasOverlayRef.current.removeEventListener('click', outputClickHandler)
+      while (outputPoints.length > 0) outputPoints.pop()
+    }
+
+    inputCanvasOverlayRef.current.addEventListener('click', inputClickHandler)
+    outputCanvasOverlayRef.current.addEventListener('click', outputClickHandler)
     //------------------------------------------------------
 
     const canvas2 = outputCanvasRef.current
@@ -128,66 +203,7 @@ function App() {
     reader.readAsDataURL(e.target.files[0])
   }
 
-  const handleClick = (canvasRef, canvasIndex) => {
-    return (event) => {
-      const canvas = canvasRef.current
-      const rect = canvas.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
-
-      console.log(`clicked at: (${x}, ${y})`)
-      if (canvasIndex === 0) {
-        if (inputPoints.length > 3) {
-          inputPoints[inputPointsIndex] = {x, y}
-        } else {
-          inputPoints.push({x,y})
-        }
-
-        drawPoints(canvas, inputPoints)
-        // setInputPoints(newInput)
-        if (inputPointsIndex === 3) inputPointsIndex = 0
-        else inputPointsIndex += 1
-      } else {
-        if (outputPoints.length > 3) {
-          outputPoints[outputPointsIndex] = {x, y}
-        } else {
-          outputPoints.push({x,y})
-        }
-
-        drawPoints(canvas, outputPoints)
-        // setOutputPoints(newOutput)
-        if (outputPointsIndex === 3) outputPointsIndex = 0
-        else outputPointsIndex += 1
-      }
-    }
-  }
-
-  /**
-   * 
-   * @param {any} canvas 
-   * @param {point[]} points 
-   */
-  const drawPoints = (canvas, points) => {
-    console.log(points)
-    const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    const colors = ['#dd0000','#00dd00', '#0000dd', '#dd00dd', '#dddd00']
-    let npoints = points
-    // if (points.length === 4) {
-    //   const center = getCentralPoint(points)
-    //   console.log('may draw the center:', center)
-    //   npoints = [...points, center]
-    // }
-    
-    npoints.forEach((point, idx) => {
-      const radius  = 5
-      ctx.beginPath()
-      ctx.arc(point.x, point.y, radius, 0, Math.PI*2)
-      ctx.fillStyle = colors[idx]
-      ctx.fill()
-      ctx.closePath()
-    })
-  }
+  
 
   const reRender = () => {
     console.log('start rendering...')
